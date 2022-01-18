@@ -29,17 +29,14 @@ for i = 2:size(y1,2)
     y4(i) = y4(i-1) + y4_state(y1(i-1),y2(i-1),y3(i-1),y4(i-1),a,b,c,d)*h;
 end
 
-f = figure; f.Position(1:2) = [800 800]; % [right bottom]
+% f = figure; f.Position(1:2) = [800 800]; % [right bottom]
 subplot(2,2,1); plot(y1,y2); grid on; grid minor;
 subplot(2,2,2); plot(y2,y3); grid on; grid minor;
 subplot(2,2,3); plot(y3,y4); grid on; grid minor;
 subplot(2,2,4); plot(y1,y4); grid on; grid minor;
 
-check_max = [max(y1) max(y2) max(y3) max(y4)];
-check_min = [min(y1) min(y2) min(y3) min(y4)];
-check_min = min(check_min)
-check_max = max(check_max)
-
+check_max = max( [max(y1) max(y2) max(y3) max(y4)] )
+check_min = min( [min(y1) min(y2) min(y3) min(y4)] )
 toc
 
 % Descripcion de sistema dinamico

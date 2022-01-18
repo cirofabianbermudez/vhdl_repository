@@ -4,7 +4,7 @@
 
 
 
-## System dynamics
+## Sistema dinamico
 
 $$
 \begin{array}{lcl}
@@ -16,13 +16,13 @@ $$
 		\label{ec:sundar}
 $$
 
-## Forward Euler equation for the system
+## Forward Euler ecuación para el sistema
 
-The forward Euler method is as follows:
+El método de forward Euler es el siguiente:
 $$
 y_{n+1} = y_{n} + h f(x_{n},y_{n})
 $$
-For convinience we do the following substitutions:
+Resulta conveniente realizar las siguientes sustituciones:
 $$
 \begin{array}{lcl}
 		y_{1} & = &  w\\
@@ -32,7 +32,7 @@ $$
 \end{array}
 %% y_{1} = w \qquad y_{2} = x \qquad y_{3} = y \qquad y_{4} = z
 $$
-The resulting system is:
+El sistema resultante es:
 $$
 \begin{array}{lcl}
 		w_{n+1} & = & w_{n} + h [ a(x_{n}-w_{n}) + x_{n}y_{n} + dz_{n} ]  \\
@@ -42,7 +42,7 @@ $$
 \end{array}
 		\label{ec:sundar_euler}
 $$
-where
+donde:
 $$
 \begin{array}{lcl}
 		a & = &  40\\
@@ -51,7 +51,7 @@ $$
 		d & = &  7\\
 \end{array}
 $$
-and the initial conditions are 
+y las condiciones iniciales son:
 $$
 \begin{array}{lcl}
 		w_{0} & = &  0.1\\
@@ -60,11 +60,9 @@ $$
 		z_{0} & = &  0.1\\
 \end{array}
 $$
-We need adders, subtracters, multipliers, multiplexers, registers and  CU.
+___
 
-
-
-## MATLAB simulation with forward Euler
+## Simulación de MATLAB con forward Euler
 
 ### 1. Simulación básica de sistema
 
@@ -72,19 +70,26 @@ We need adders, subtracters, multipliers, multiplexers, registers and  CU.
 clear; close all; clc;
 tic
 h = 0.001;     % Tamanio de paso
-t = 0:h:10000; % Vector de tiempo
+t = 0:h:100;   % Vector de tiempo
 
-a = 40; b = 28; c = 4; d = 7;	% Parametros
-y1 = zeros(size(t));   			% Inicializacion de los vectores
+% Parametros
+a = 40;
+b = 28;
+c = 4;
+d = 7;
+
+y1 = zeros(size(t));   % Inicializacion de los vectores
 y2 = zeros(size(t));
 y3 = zeros(size(t));
 y4 = zeros(size(t));
+
 % Asignacion de condicion inicial
-ini_cond = [0.1 0.1 0.1 0.1]';	% Condiciones iniciales
+ini_cond = [0.1 0.1 0.1 0.1]';    % Condiciones iniciales
 y1(1) = ini_cond(1);
 y2(1) = ini_cond(2);
 y3(1) = ini_cond(3);
 y4(1) = ini_cond(3);
+
 % Algoritmo forward euler
 for i = 2:size(y1,2)
     y1(i) = y1(i-1) + y1_state(y1(i-1),y2(i-1),y3(i-1),y4(i-1),a,b,c,d)*h;
@@ -93,17 +98,16 @@ for i = 2:size(y1,2)
     y4(i) = y4(i-1) + y4_state(y1(i-1),y2(i-1),y3(i-1),y4(i-1),a,b,c,d)*h;
 end
 
+% f = figure; f.Position(1:2) = [800 800]; % [right bottom]
 subplot(2,2,1); plot(y1,y2); grid on; grid minor;
 subplot(2,2,2); plot(y2,y3); grid on; grid minor;
 subplot(2,2,3); plot(y3,y4); grid on; grid minor;
 subplot(2,2,4); plot(y1,y4); grid on; grid minor;
 
-check_max = [max(y1) max(y2) max(y3) max(y4)];
-check_min = [min(y1) min(y2) min(y3) min(y4)];
-check_max = max(check_max)
-check_min = min(check_min)
-
+check_max = max( [max(y1) max(y2) max(y3) max(y4)] )
+check_min = min( [min(y1) min(y2) min(y3) min(y4)] )
 toc
+
 % Descripcion de sistema dinamico
 function R = y1_state(y1,y2,y3,y4,a,b,c,d)
     R = a*(y2-y1) + y2*y3 + d*y4;
@@ -122,7 +126,7 @@ function R = y4_state(y1,y2,y3,y4,a,b,c,d)
 end
 ```
 
-De la simulación podemos notar que los límites absolutos son  [-37.0094636606145 , 45.4266030729233], y un buen tamaño de paso es h = 0.001.
+De la simulación podemos notar que los límites absolutos son  [-37.0094 , 45.4266], y un buen tamaño de paso es h = 0.001.
 
 <img src="images/simu.jpg" alt="simu" style="zoom:150%;" />
 
@@ -186,7 +190,7 @@ check_min = min(data,[],'all')
 toc
 ```
 
-Calculamos el máximo y el mínimo en cada una de las operaciones, [-1546.4540912767,1583.57210518208], con esta información ya podemos seleccionar el número de bits de la parte entera, el cual se comprobará en la simulación en C.
+Calculamos el máximo y el mínimo en cada una de las operaciones, [-1546.4540,1583.5721], con esta información ya podemos seleccionar el número de bits de la parte entera, $2^{11} = 2048$, despues realizaremos una simulación en C para comprobar la arquitectura
 
 
 
@@ -198,9 +202,7 @@ Calculamos el máximo y el mínimo en cada una de las operaciones, [-1546.454091
 
 | Variable | Number of bits | Format     | Move point | Range $[-2^{a},2^{a}-2^{-b}]$ |
 | -------- | -------------- | ---------- | ---------- | ----------------------------- |
-| $X$      | $32$ bits      | $X(11,20)$ | $20$       | $[-64,63.9999999701977]$      |
-
-
+| $X$      | $64$ bits      | $X(11,52)$ | $52$       | $[-2048,2048]$                |
 
 
 
@@ -208,51 +210,41 @@ Calculamos el máximo y el mínimo en cada una de las operaciones, [-1546.454091
 
 ```c
 /*
-    Autor:  Ciro Fabian Bermudez Marquez
-    Nombre: Simulador de diseños en VHDL de 64 bits en punto fijo
-    Agracecimientos: Dr. Luis Gerardo de la Fraga y Dr. Cuauhtemoc Mancillas López
+    Autor: 		 Ciro Fabian Bermudez Marquez
+    Descripción: Simulador de diseños en VHDL de 64 bits en punto fijo
 */
+/* Librerias*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
 
 /* Variables globales */
-int _a;                       // parte entera
-int _b;                       // parte fraccionaria
-long _power;
+int _a;			// parte entera
+int _b;			// parte fraccionaria
+long _power;	// factor de conversion
 
+/*Funciones*/
 
-/*
-    Para un Ryzen 5 3600 en MxLinux
-    
-    Data type <int> tiene 4 bytes, es decir 32 bits.
-    printf("int is %lu bytes.\n",sizeof(int));
-    
-    Data type <short> tiene 2 bytes, es decir 16 bits.
-    printf("short is %lu bytes.\n",sizeof(short));
-    
-    Para compilar ejecutar:
-        gcc -o cordic cordic.c - lm
-*/
-
+// Inicializacion A(a,b) representacion en punto fijo
 void inicializa( int a, int b ){        
-    _a = a;                             // A(a,b) representacion en punto fijo, cargamos variables globables 
-    _b = b;
-    _power = 1L << _b;                  // Calculamos el factor para la conversion
+	_a = a;					// _a: parte entera
+    _b = b;					// _b: parte fraccionaria
+    _power = (long)1 << _b;	// calculo de factor de conversion
 }
 
-
-long setNumber( double v ){              // Convierte a punto fijo con truncamiento 
+// Convierte a punto fijo con truncamiento 
+long setNumber( double v ){
     return ( (long)(v*_power) );
 }
 
-double getNumber( long r ){              // Convierte de vuelta a double
+// Convierte de vuelta a punto flotante
+double getNumber( long r ){
     return ( (double)r/_power);
 }
 
-
-long multTrunc( long x, long y ){          // Multiplicacion con truncamiento
+// Multiplicacion de punto fijo con truncamiento
+long multTrunc( long x, long y ){
     __int128 r;
     __int128 a=0;
     __int128 b=0;
@@ -263,95 +255,245 @@ long multTrunc( long x, long y ){          // Multiplicacion con truncamiento
     return( r );
 }
 
-
 int main(int argc, char *argv[]){
-
-    // Archivo de texto
-    FILE *fpointer = fopen("salida.txt","w");
+    FILE *fpointer = fopen("salida.txt","w");	    // Archivo de texto
     
-    int entera;                     
+    // Arq: 64 bits entera + frac + 1 = 64
+    int entera = 11;
     int frac;
-    int i;
-
-    long y1_n,y2_n,y3_n,y4_n;        // Variables para algoritmo
-    long y1_ni,y2_ni,y3_ni,y4_ni;
-    long hf;
-    long ap,bp,cp,dp;         		// Parametros del sistema
+    frac = 64 - 1 - entera;
     
-    double y1_0,y2_0,y3_0,y4_0,h;    // Variables para condiciones iniciales
+    // Variables y parametros de simulacion
+	// Condiciones iniciales
+	double y1_0 = 0.1;
+	double y2_0 = 0.1;
+	double y3_0 = 0.1;
+	double y4_0 = 0.1;
+	
+	// Para metros
+	double a = 40.0;
+	double b = 28.0;
+	double c = 4.0;
+	double d = 7.0;
+	double h = 0.001;
+	
+	// Variables para algoritmo en punto fijo
+	long y1_n,y2_n,y3_n,y4_n;        	// Actual
+    long y1_ni,y2_ni,y3_ni,y4_ni;		// Siguiente
+	long apf, bpf, cpf, dpf, hpf;
     
-    
-    // Parametros de punto fijo
-    entera = 11; // 20
-    frac = 52; // 43
-    inicializa( entera, frac );
+    // Inicializacion de arq
+    inicializa( entera, frac);
     printf(" Representacion A(a,b) = A(%d,%d)\n a: entera\tb: fraccionaria\n",entera,frac);
-
-    // Valores iniciales
-    y1_0 = 0.1;
-    y2_0 = 0.1;
-    y3_0 = 0.1;
-    y4_0 = 0.1;
-    h    = 0.001;
-    
-    printf(" # y1_0: %f\n", y1_0 );
-    printf(" # y2_0: %f\n", y2_0 );
-    printf(" # y3_0: %f\n", y3_0 );
-    printf(" # y4_0: %f\n", y4_0 );
-    printf(" #    h: %f\n", h );
+    printf(" Rango: [%30.20f,%30.20f] = \n", -pow(2.0,entera),pow(2.0,entera)-pow(2.0,-frac));
     
     // Conversion a punto fijo
-    y1_n = setNumber( y1_0 );
-    y2_n = setNumber( y2_0 );
-    y3_n = setNumber( y3_0 );
-    y4_n = setNumber( y4_0 );
-      hf = setNumber(    h );
-    printf(" # y1_0 real: %2.10f\n",getNumber(y1_n) );
-    printf(" # y2_0 real: %2.10f\n",getNumber(y2_n) );
-    printf(" # y3_0 real: %2.10f\n",getNumber(y3_n) );
-    printf(" # y4_0 real: %2.10f\n",getNumber(y4_n) );
-    printf(" #    h real: %2.10f\n",getNumber(  hf) );
+	
+	y1_n = setNumber( y1_0 );
+	y2_n = setNumber( y2_0 );
+	y3_n = setNumber( y3_0 );
+	y4_n = setNumber( y4_0 );
+	apf = setNumber( a );
+	bpf = setNumber( b ); 
+	cpf = setNumber( c );
+	dpf = setNumber( d );
+	hpf = setNumber( h );
+	printf(" # y1_0:      %12.8f\n # y1_0 real: %12.8f\n", y1_0, getNumber( y1_n ) );
+	printf(" # y2_0:      %12.8f\n # y2_0 real: %12.8f\n", y2_0, getNumber( y2_n ) );
+	printf(" # y2_0:      %12.8f\n # y3_0 real: %12.8f\n", y3_0, getNumber( y3_n ) );
+	printf(" # y4_0:      %12.8f\n # y4_0 real: %12.8f\n", y4_0, getNumber( y4_n ) );
+	printf(" # a:      %12.8f\n # a real: %12.8f\n", a, getNumber( apf ) );
+	printf(" # b:      %12.8f\n # b real: %12.8f\n", b, getNumber( bpf ) );
+	printf(" # c:      %12.8f\n # c real: %12.8f\n", c, getNumber( cpf ) );
+	printf(" # d:      %12.8f\n # d real: %12.8f\n", d, getNumber( dpf ) );
+	
+	
     
-    
-    // Parametros del sistema
-    ap = setNumber( 40.0 );
-    bp = setNumber( 28.0 );
-    cp = setNumber( 4.0 );
-    dp = setNumber( 7.0 );
+	fprintf(fpointer,"%20.15f\t%20.15f\n",getNumber( y1_n ), getNumber( y2_n ));
+    for(int i = 0; i<1000; i++){
 
-    
-    //fprintf(fpointer,"%2.20f\t%2.20f\t\t%lx\t\t%lx\n",getNumber( y1_n ), getNumber( y2_n ) , y1_n, y2_n);
-    fprintf(fpointer,"%2.20f\t%2.20f\n",getNumber( y1_n ), getNumber( y2_n ));
-    for(i = 0; i<10000000; i++){
-
-        y1_ni = y1_n  + multTrunc(hf,multTrunc( ap, y2_n - y1_n ) + multTrunc(y2_n, y3_n) + multTrunc( dp, y4_n));
-        y2_ni = y2_n  + multTrunc(hf, - y1_n + multTrunc( bp, y2_n ) - multTrunc( y1_n ,y3_n ) + multTrunc( dp, y4_n));
-        y3_ni = y3_n  + multTrunc(hf, multTrunc( y2_n , y2_n ) - multTrunc( cp, y3_n));
-        y4_ni = y4_n  + multTrunc(hf, - y2_n);
-        
+        y1_ni = y1_n  + multTrunc(hpf,multTrunc( apf, y2_n - y1_n ) + multTrunc(y2_n, y3_n) + multTrunc( dpf, y4_n));
+        y2_ni = y2_n  + multTrunc(hpf, - y1_n + multTrunc( bpf, y2_n ) - multTrunc( y1_n ,y3_n ) + multTrunc( dpf, y4_n));
+        y3_ni = y3_n  + multTrunc(hpf, multTrunc( y2_n , y2_n ) - multTrunc( cpf, y3_n));
+        y4_ni = y4_n  + multTrunc(hpf, - y2_n);
         
         y1_n = y1_ni;
         y2_n = y2_ni;
         y3_n = y3_ni;
         y4_n = y4_ni;     
 
-        //fprintf(fpointer,"%2.20f\t%2.20f\t\t%lx\t\t%lx\n",getNumber( y1_ni ), getNumber( y2_ni ),y2_ni,y2_ni);
-        fprintf(fpointer,"%2.20f\t%2.20f\n",getNumber( y1_n ), getNumber( y2_n ));
+        fprintf(fpointer,"%20.15f\t%20.15f\n",getNumber( y1_n ), getNumber( y2_n ));
     }
     
-    fclose(fpointer);
-    return 0;
+	fclose(fpointer);								// Cerrar archivo de texto
+	return 0;
 }
 // gcc -o simulation simulation.c
 // ./simulation 
 // gnuplot -e "filename='salida.txt'" graph.gnu
 ```
 
-
-
-
-
 <img src="images/c_simulation.png" alt="c_simulation" style="zoom:80%;" />
+
+
+
+## Simulación en C HEX
+
+````c
+/*
+    Autor: 		 Ciro Fabian Bermudez Marquez
+    Descripción: Simulador de diseños en VHDL de 64 bits en punto fijo
+*/
+/* Librerias*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+/* Variables globales */
+int _a;			// parte entera
+int _b;			// parte fraccionaria
+long _power;	// factor de conversion
+
+/*Funciones*/
+
+// Inicializacion A(a,b) representacion en punto fijo
+void inicializa( int a, int b ){        
+	_a = a;					// _a: parte entera
+    _b = b;					// _b: parte fraccionaria
+    _power = (long)1 << _b;	// calculo de factor de conversion
+}
+
+// Convierte a punto fijo con truncamiento 
+long setNumber( double v ){
+    return ( (long)(v*_power) );
+}
+
+// Convierte de vuelta a punto flotante
+double getNumber( long r ){
+    return ( (double)r/_power);
+}
+
+// Multiplicacion de punto fijo con truncamiento
+long multTrunc( long x, long y ){
+    __int128 r;
+    __int128 a=0;
+    __int128 b=0;
+    a = x;
+    b = y;
+    r = a*b;
+    r = r >> _b;
+    return( r );
+}
+
+int main(int argc, char *argv[]){
+    FILE *fpointer = fopen("salida.txt","w");	    // Archivo de texto
+    
+    // Arq: 64 bits entera + frac + 1 = 64
+    int entera = 11;
+    int frac;
+    frac = 64 - 1 - entera;
+    
+    // Variables y parametros de simulacion
+	// Condiciones iniciales
+	double y1_0 = 0.1;
+	double y2_0 = 0.1;
+	double y3_0 = 0.1;
+	double y4_0 = 0.1;
+	
+	// Para metros
+	double a = 40.0;
+	double b = 28.0;
+	double c = 4.0;
+	double d = 7.0;
+	double h = 0.001;
+	
+	// Variables para algoritmo en punto fijo
+	long y1_n,y2_n,y3_n,y4_n;        	// Actual
+    long y1_ni,y2_ni,y3_ni,y4_ni;		// Siguiente
+	long apf, bpf, cpf, dpf, hpf;
+    
+    // Inicializacion de arq
+    inicializa( entera, frac);
+    printf(" Representacion A(a,b) = A(%d,%d)\n a: entera\tb: fraccionaria\n",entera,frac);
+    printf(" Rango: [%30.20f,%30.20f] = \n", -pow(2.0,entera),pow(2.0,entera)-pow(2.0,-frac));
+    
+    // Conversion a punto fijo
+	
+	y1_n = setNumber( y1_0 );
+	y2_n = setNumber( y2_0 );
+	y3_n = setNumber( y3_0 );
+	y4_n = setNumber( y4_0 );
+	apf = setNumber( a );
+	bpf = setNumber( b ); 
+	cpf = setNumber( c );
+	dpf = setNumber( d );
+	hpf = setNumber( h );
+	printf(" # y1_0:      %12.8f\n # y1_0 real: %12.8f\n", y1_0, getNumber( y1_n ) );
+	printf(" # y2_0:      %12.8f\n # y2_0 real: %12.8f\n", y2_0, getNumber( y2_n ) );
+	printf(" # y2_0:      %12.8f\n # y3_0 real: %12.8f\n", y3_0, getNumber( y3_n ) );
+	printf(" # y4_0:      %12.8f\n # y4_0 real: %12.8f\n", y4_0, getNumber( y4_n ) );
+	printf(" # a:      %12.8f\n # a real: %12.8f\n", a, getNumber( apf ) );
+	printf(" # b:      %12.8f\n # b real: %12.8f\n", b, getNumber( bpf ) );
+	printf(" # c:      %12.8f\n # c real: %12.8f\n", c, getNumber( cpf ) );
+	printf(" # d:      %12.8f\n # d real: %12.8f\n", d, getNumber( dpf ) );
+	
+	printf("%.16lx\n%.16lx\n%.16lx\n%.16lx\n\n", y1_n,y2_n,y3_n,y4_n );
+    printf("%.16lx\n%.16lx\n%.16lx\n%.16lx\n%.16lx\n", apf,bpf,cpf,dpf,hpf );
+	fprintf(fpointer,"%.16lx\t%.16lx\n", y1_n , y2_n );
+    for(int i = 0; i<100; i++){
+
+        y1_ni = y1_n  + multTrunc(hpf,multTrunc( apf, y2_n - y1_n ) + multTrunc(y2_n, y3_n) + multTrunc( dpf, y4_n));
+        y2_ni = y2_n  + multTrunc(hpf, - y1_n + multTrunc( bpf, y2_n ) - multTrunc( y1_n ,y3_n ) + multTrunc( dpf, y4_n));
+        y3_ni = y3_n  + multTrunc(hpf, multTrunc( y2_n , y2_n ) - multTrunc( cpf, y3_n));
+        y4_ni = y4_n  + multTrunc(hpf, - y2_n);
+        
+        y1_n = y1_ni;
+        y2_n = y2_ni;
+        y3_n = y3_ni;
+        y4_n = y4_ni;     
+
+        fprintf(fpointer,"%.16lx\t%.16lx\n", y1_n , y2_n );
+    }
+    
+	fclose(fpointer);								// Cerrar archivo de texto
+	return 0;
+}
+````
+
+
+
+Salida
+
+```
+y1=0001999999999999
+y2=0001999999999999
+y3=0001999999999999
+y4=0001999999999999
+
+a=0280000000000000
+b=01c0000000000000
+c=0040000000000000
+d=0070000000000000
+h=000004189374bc6a
+```
+
+
+
+```
+0001999999999999	0001999999999999
+00019c8216c61521	0001a77c45cbbc29
+00019fda907fd393	0001b5c0f6e0250f
+0001a3a273397594	0001c46a45a4ee39
+0001a7d94bc2671f	0001d37add89f9ec
+0001ac7ec6b96dfb	0001e2f57d1c06ec
+0001b192b009c7c3	0001f2dcf6835938
+.					.
+.					.
+.					.
+```
+
+
 
 
 
@@ -361,25 +503,84 @@ A continuación se muestran todos los bloques:
 
 ```vhdl
 library ieee;
-use ieee.std_logic_1164.all;			   
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-entity mux is
-	generic( n : integer := 64);  -- Tamanio de palabra
+entity adder is
+	generic( n : integer := 64 );
 	port(
-        X0	: in std_logic_vector(n-1 downto 0);
-        Xn_1: in std_logic_vector(n-1 downto 0);	   
-        SEL	: in std_logic;
-        Xn	: out std_logic_vector(n-1 downto 0)
+        T1,T2	 : in   std_logic_vector(n-1 downto 0);
+        S1	     : out  std_logic_vector(n-1 downto 0) 
 	);
-end;	 		  
+end;	
 
-architecture arch of mux is
-begin
-	Xn <= X0 when SEL = '0' else Xn_1;
-end arch;
+architecture arch of adder is
+begin	
+	S1 <= std_logic_vector( signed(T1) + signed(T2) );
+end arch;										
 ```
 
-**Código: mux.vhd**
+**Código: adder.vhd**
+
+
+
+
+
+```vhdl
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity sub is
+	generic( n : integer := 64 );
+	port(
+        T1,T2	 : in   std_logic_vector(n-1 downto 0);
+        S1	     : out  std_logic_vector(n-1 downto 0) 
+	);
+end;	
+
+architecture arch of sub is
+begin	
+	S1 <= std_logic_vector( signed(T1) - signed(T2) );
+end arch;											
+```
+
+**Código: sub.vhd**
+
+
+
+
+
+```vhdl
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity mult is
+    generic( n  :   integer := 64);
+    port(
+        A   : in    std_logic_vector(n-1 downto 0);
+        B   : in    std_logic_vector(n-1 downto 0);
+        M   : out   std_logic_vector(n-1 downto 0)
+    );
+end;    
+
+architecture arch of mult is
+signal temp : std_logic_vector(2*n-1 downto 0);
+begin   												  
+    temp <= std_logic_vector(signed(A)*signed(B));
+    M <= temp(115 downto 52);
+end arch;
+
+-- El formato es  A(a ,b ) = (11,52)
+--               Ap(ap,bp) = (22,104)
+-- lim_izq = bp + a = 104 + 11 = 115
+-- lim_der = bp - 1 - (b-1) = 104 -1 - (52-1) = 52								
+```
+
+**Código: mult.vhd**
+
+
 
 
 
@@ -387,7 +588,7 @@ end arch;
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ff_gen_hab is
+entity ff_hab is
 	generic(n : integer := 64);
 	port(
 		RST	:	in	std_logic;
@@ -398,7 +599,7 @@ entity ff_gen_hab is
 	);	
 end;
 
-architecture ff of ff_gen_hab is
+architecture ff of ff_hab is
 signal Qn, Qp : std_logic_vector(n-1 downto 0);
 begin		 
 --	Qn <= Qp when HAB = '0' else D;	 
@@ -418,79 +619,9 @@ begin
 end ff;
 ```
 
-**Código: ff_gen_hab.vhd**
+**Código: ff_hab.vhd**
 
 
-
-```vhdl
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-entity mult is
-	generic( n	:	integer := 64);
-	port(
-		A	: in	std_logic_vector(n-1 downto 0);
-		B	: in	std_logic_vector(n-1 downto 0);
-		M	: out	std_logic_vector(n-1 downto 0)
-	);
-end;	
-
-architecture aritmetica of mult is
-signal temp : std_logic_vector(2*n-1 downto 0);			   -- La parte fraccionaria es de 60 bits		3,60
-begin	
-    temp <= std_logic_vector(signed(A)*signed(B));
-	M <= temp(123 downto 60);
-end aritmetica;										
-```
-
-**Código: mult.vhd**
-
-
-
-```vhdl
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-entity sum is
-	generic( n : integer := 64 );
-	port(
-        T1,T2	 : in   std_logic_vector(n-1 downto 0);
-        S1	     : out  std_logic_vector(n-1 downto 0) 
-	);
-end;	
-
-architecture aritmetica of sum is
-begin	
-	S1 <= std_logic_vector( signed(T1) + signed(T2) );
-end aritmetica;										
-```
-
-**Código: sum.vhd**
-
-
-
-```vhdl
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-entity sum4a1 is
-	generic( n : integer := 64 );
-	port(
-        T1,T2,T3,T4			 : in   std_logic_vector(n-1 downto 0);
-        S1	                 : out  std_logic_vector(n-1 downto 0) 
-	);
-end;	
-
-architecture aritmetica of sum4a1 is
-begin	
-	S1 <= std_logic_vector( signed(T1) + signed(T2) + signed(T3) + signed(T4));
-end aritmetica;										
-```
-
-**Código: sum4a1.vhd**
 
 
 
@@ -501,26 +632,22 @@ use ieee.std_logic_1164.all;
 entity rom is
 	generic( n : integer := 64 ); 		 -- tamaño de palabra
 	port(
-		an_1,an_2,an_3,an_4    :	out	std_logic_vector(n-1 downto 0);
-		an_5,an_6,an_7,an_8    :	out	std_logic_vector(n-1 downto 0);
-		an_9,an_10,an_11,an_12 :	out	std_logic_vector(n-1 downto 0)
+		a,b,c,d,h,w0,x0,y0,z0	: out	std_logic_vector(n-1 downto 0)
 	);	
 end rom;					 
 
 architecture arch of rom is
 begin	  	
-     an_1 <= "1111011001100110011001100110011001100110011001100110011010000000";	 -- -0.6 
-	 an_2 <= "1111111001100110011001100110011001100110011001100110011001100000";	 -- -0.1 
-	 an_3 <= "0001000110011001100110011001100110011001100110011001101000000000";	 -- 1.1 
-	 an_4 <= "0000001100110011001100110011001100110011001100110011001101000000";	 -- 0.2 
-	 an_5 <= "1111001100110011001100110011001100110011001100110011001100000000";	 -- -0.8 
-	 an_6 <= "0000100110011001100110011001100110011001100110011001100110000000";	 -- 0.6 
-	 an_7 <= "1111010011001100110011001100110011001100110011001100110100000000";	 -- -0.7 
-	 an_8 <= "0000101100110011001100110011001100110011001100110011001100000000";	 -- 0.7 
-	 an_9 <= "0000101100110011001100110011001100110011001100110011001100000000";	 -- 0.7 
-	 an_10 <= "0000010011001100110011001100110011001100110011001100110011000000";	 -- 0.3 
-	 an_11 <= "0000100110011001100110011001100110011001100110011001100110000000";	 -- 0.6 
-	 an_12 <= "0000111001100110011001100110011001100110011001100110011010000000";	 -- 0.9 
+	 a <= "0000001010000000000000000000000000000000000000000000000000000000";	 -- 40.000 
+	 b <= "0000000111000000000000000000000000000000000000000000000000000000";	 -- 28.000 
+	 c <= "0000000001000000000000000000000000000000000000000000000000000000";	 -- 4.000 
+	 d <= "0000000001110000000000000000000000000000000000000000000000000000";	 -- 7.000 
+	 h <= "0000000000000000000001000001100010010011011101001011110001101010";	 -- 0.001 
+	 w0 <= "0000000000000001100110011001100110011001100110011001100110011001";	 -- 0.100 
+	 x0 <= "0000000000000001100110011001100110011001100110011001100110011001";	 -- 0.100 
+	 y0 <= "0000000000000001100110011001100110011001100110011001100110011001";	 -- 0.100 
+	 z0 <= "0000000000000001100110011001100110011001100110011001100110011001";	 -- 0.100 
+	 
 end arch;
 ```
 
@@ -528,11 +655,60 @@ end arch;
 
 
 
+
+
+```vhdl
+library ieee;
+use ieee.std_logic_1164.all;               
+
+entity mux is
+    generic( n : integer := 64);  -- Tamanio de palabra
+    port(
+        W0  : in std_logic_vector(n-1 downto 0);
+        Wn_1: in std_logic_vector(n-1 downto 0);       
+        SEL : in std_logic;
+        Wn  : out std_logic_vector(n-1 downto 0)
+    );
+end;              
+
+architecture arch of mux is
+begin
+    Wn <= W0 when SEL = '0' else Wn_1;
+end arch;
+```
+
+**Código: mux.vhd**
+
+
+
+## Diseño de maquina de estado
+
+Los registros funcionan con la siguiente lógica:
+
+| HAB         | Accion        |
+| ----------- | ------------- |
+| `00`        | Reset         |
+| `01`        | Pasar dato    |
+| `10` o `11` | Mantener dato |
+
+Los mux funcionan con la siguiente lógica:
+
+| SEL  | Salida            |
+| ---- | ----------------- |
+| `0`  | Condición inicial |
+| `1`  | Retroalimentación |
+
+
+
+<img src="images\fsm.svg" alt="fsm" style="zoom:100%;" />
+
+La maquina de estado funciona teniendo en cuenta la señal de entrada `START` la cual el usuario controla con un switch de la FPGA o puede utilizarse como señal interna de comienzo para interconectarse con otros sistemas. Al encenderse el sistema, `SEL` esta en `0` y `HAB` en `00`, por tanto en la salida de los multiplaxores se encuentra la condición inicial y los registros inicializan con cero, casi instantaneamente se realizan todas las operaciones del sistema en paralelo pero no es hasta que `START` este en `1` que pasa al siguiente estado y se almacenan los resultados en los registros, `SEL` se mantiene en `0` para no alterar la operación actual. Despues de esa primera iteración se pasa al siguiente estado donde `SEL` es igual a`1` y `HAB` a `11`, los registros pasan a mantener su estado actual, y a la salida de los multiplexores ahora tenemos los valores de los registros, otra vez, de manera casi inmediata se realiza el cálculo y dependiendo si `START` es igual `1` o `0` se guada el resultado en los registros o mantiene su valor. De esta manera podemos calcular cada iteración dependiendo unicamente de la señal `START`, 
+
 ```vhdl
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity cu2 is
+entity cu is
   port(
     RST     : in   std_logic;
     CLK     : in   std_logic;
@@ -542,7 +718,7 @@ entity cu2 is
   );
 end;
 
-architecture fsm of cu2 is
+architecture fsm of cu is
     signal Qp, Qn  : std_logic_vector(1 downto 0); -- porque son 6 estados
 begin
   
@@ -583,88 +759,175 @@ begin
 end fsm;
 ```
 
-**Código: cu2.vhd**
+**Código: cu.vhd**
+
+
+
+```vhdl
+library IEEE;
+use IEEE.std_logic_1164.all;               	   
+
+entity sundar_system is
+    generic( n : integer := 64 );  -- Tamanio de palabra
+    port(
+        CLK     : in  std_logic;
+        RST     : in  std_logic;
+        START   : in std_logic;
+		--w0      : in  std_logic_vector(n-1 downto 0);
+        --X0      : in  std_logic_vector(n-1 downto 0);
+        --Y0      : in  std_logic_vector(n-1 downto 0);
+		--Z0      : in  std_logic_vector(n-1 downto 0);
+        Wn_out    : out  std_logic_vector(n-1 downto 0);
+        Xn_out    : out  std_logic_vector(n-1 downto 0);	 
+		Yn_out    : out  std_logic_vector(n-1 downto 0);
+		Zn_out    : out  std_logic_vector(n-1 downto 0)
+    );
+end;              
+
+architecture arch of sundar_system is
+	signal sel : std_logic;
+    signal hab : std_logic_vector(1 downto 0);
+	signal wn_retro, xn_retro, yn_retro, zn_retro : std_logic_vector(n-1 downto 0);
+	signal wn, xn, yn, zn : std_logic_vector(n-1 downto 0);
+	signal s1,s2,s3,s4,s5 : std_logic_vector(n-1 downto 0);
+	signal a1,a2,a3,a4,a5,a6 : std_logic_vector(n-1 downto 0);
+	signal m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11 : std_logic_vector(n-1 downto 0);
+	signal a_rom, b_rom, c_rom, d_rom, h_rom : std_logic_vector(n-1 downto 0);
+	signal w0_rom, x0_rom, y0_rom, z0_rom : std_logic_vector(n-1 downto 0);
+begin	
+	
+    -- Control Unit
+    cu_mod  : entity work.cu  port map(RST,CLK,START,hab,sel);
+	
+	
+	-- Mux
+    mux_w   : entity work.mux    generic map(n => 64) port map(w0_rom,wn_retro,sel,wn);        -- listo
+	mux_x   : entity work.mux    generic map(n => 64) port map(x0_rom,xn_retro,sel,xn);        -- listo
+	mux_y   : entity work.mux    generic map(n => 64) port map(y0_rom,yn_retro,sel,yn);        -- listo
+	mux_z   : entity work.mux    generic map(n => 64) port map(z0_rom,zn_retro,sel,zn);        -- listo	
+	
+	
+	-- Rom de parametros
+	param	: entity work.rom	generic map(n => 64) port map(a_rom,b_rom,c_rom,d_rom,h_rom,w0_rom,x0_rom,y0_rom,z0_rom);
+	
+	-- Bloque wn
+    sub_1 	: entity work.sub    generic map(n => 64) port map(xn,wn,s1);         -- Listo
+    mult_1  : entity work.mult   generic map(n => 64) port map(s1,a_rom,m1);	  -- Listo		
+    mult_2  : entity work.mult   generic map(n => 64) port map(xn,yn,m2);         -- Listo  
+	add_1	: entity work.adder  generic map(n => 64) port map(m1,m2,a1);         -- Listo	
+	mult_3  : entity work.mult   generic map(n => 64) port map(d_rom,zn,m3);      -- Listo
+		-- Integrador wn	
+	add_2	: entity work.adder  generic map(n => 64) port map(a1,m3,a2);         -- Listo
+	mult_8  : entity work.mult   generic map(n => 64) port map(a2,h_rom,m8);      -- Listo
+	add_4	: entity work.adder  generic map(n => 64) port map(m8,wn,a4);         -- Listo
+	reg_1   : entity work.ff_hab generic map(n => 64) port map(RST,CLK,hab,a4,wn_retro);	  -- Listo
+		
+		
+	-- Bloque xn
+    sub_2 	: entity work.sub    generic map(n => 64) port map(m3,wn,s2);          -- Listo
+	mult_4  : entity work.mult   generic map(n => 64) port map(b_rom,xn,m4);       -- Listo
+    mult_5  : entity work.mult   generic map(n => 64) port map(wn,yn,m5);          -- Listo
+	sub_3 	: entity work.sub    generic map(n => 64) port map(m4,m5,s3);          -- Listo
+		-- Integrador xn	
+	add_3	: entity work.adder  generic map(n => 64) port map(s2,s3,a3);        	-- Listo
+	mult_9  : entity work.mult   generic map(n => 64) port map(a3,h_rom,m9);       	-- Listo
+	add_5	: entity work.adder  generic map(n => 64) port map(m9,xn,a5);        	-- Listo
+	reg_2   : entity work.ff_hab generic map(n => 64) port map(RST,CLK,hab,a5,xn_retro);	  -- Listo
+		
+		
+	-- Bloque yn
+	mult_6  : entity work.mult   generic map(n => 64) port map(xn,xn,m6);            -- Listo
+	mult_7  : entity work.mult   generic map(n => 64) port map(c_rom,yn,m7);         -- Listo	
+		-- Integrador yn	
+	sub_4 	: entity work.sub    generic map(n => 64) port map(m6,m7,s4);             -- Listo
+	mult_10 : entity work.mult   generic map(n => 64) port map(s4,h_rom,m10);         -- Listo
+	add_6	: entity work.adder  generic map(n => 64) port map(m10,yn,a6);        	  -- Listo
+	reg_3   : entity work.ff_hab generic map(n => 64) port map(RST,CLK,HAB,a6,yn_retro);    -- Listo
+		
+		
+	-- Bloque yn
+	mult_11 : entity work.mult   generic map(n => 64) port map(xn,h_rom,m11);         -- Listo
+	sub_5 	: entity work.sub    generic map(n => 64) port map(zn,m11,s5);            -- Listo
+	reg_4   : entity work.ff_hab generic map(n => 64) port map(RST,CLK,HAB,s5,zn_retro);	   -- Listo
+		
+	Wn_out <= wn_retro;
+	Xn_out <= xn_retro;
+	Yn_out <= yn_retro;
+	Zn_out <= zn_retro;
+	
+end arch;
+```
+
+**Código: sundar_system.vhd**
+
+
+
+
 
 
 
 ```vhdl
 library ieee;
-use ieee.std_logic_1164.all;			   
+use ieee.std_logic_1164.all;
 
-entity mapa_sprott2 is
-	generic( n : integer := 64); -- Tamanio de palabra
-	port(
-        CLK     : in  std_logic;
-        RST     : in  std_logic;
-        START   : in std_logic;
-        X0	    : in  std_logic_vector(n-1 downto 0);
-        Y0      : in  std_logic_vector(n-1 downto 0);	   
-        Xn_p	: out std_logic_vector(n-1 downto 0);
-        Yn_p    : out  std_logic_vector(n-1 downto 0)
-	);
-end;	 		  
+entity tb_sundar_system is
+	generic(n : integer := 64);
+end entity;
 
-architecture arch of mapa_sprott2 is
-    signal xn, yn, xn_retro, yn_retro : std_logic_vector(n-1 downto 0);
-    signal sel : std_logic;
-	signal hab : std_logic_vector(1 downto 0);
-    signal an_1,an_2,an_3,an_4,an_5,an_6,an_7,an_8,an_9,an_10,an_11,an_12 : std_logic_vector(n-1 downto 0);
-	signal m1,m2,m3,m4,m5    : std_logic_vector(n-1 downto 0); 
-	signal s1,s2,s3,s4,s5,s6 : std_logic_vector(n-1 downto 0); 
-	signal t2,t3,t4 		 : std_logic_vector(n-1 downto 0); 
-	signal t2p,t3p,t4p 		 : std_logic_vector(n-1 downto 0); 
-begin
-    -- Mux
-	mux_x	: entity work.mux    generic map(n => 64) port map(X0,xn_retro,sel,xn);		   -- listo
-	mux_y	: entity work.mux    generic map(n => 64) port map(Y0,yn_retro,sel,yn);		   -- listo
+architecture tb of tb_sundar_system is
+	signal		RST,CLK,START		:	std_logic := '0';
+	signal		wn,xn,yn,zn			:	std_logic_vector(n-1 downto 0);
+begin 
 	
-	-- ROM	
-	rom_mod : entity work.rom generic map(n => 64) port map(an_1,an_2,an_3,an_4,an_5,an_6,an_7,an_8,an_9,an_10,an_11,an_12); -- listo
+	UUT	: entity work.sundar_system	generic map(n => 64) port map(CLK,RST,START,wn,xn,yn,zn);
+	RST <= '1', '0' after 20 ns;
+	CLK <= not CLK after 10 ns;				-- La mitad del perido que es 20 ns
 	
-	--Bloque 1
-	mult_m1 : entity work.mult   generic map(n => 64) port map(an_3,xn,m1);			 -- listo
-	sum_s1	: entity work.sum    generic map(n => 64) port map(m1,an_2,s1);			 --	listo
-	mult_t2 : entity work.mult   generic map(n => 64) port map(s1,xn,t2);			 -- listo	
 	
-	--Bloque 2
-	mult_m2 : entity work.mult   generic map(n => 64) port map(an_6,yn,m2);			 -- listo
-	sum_s2	: entity work.sum    generic map(n => 64) port map(m2,an_5,s2);			 --	listo
-	mult_t4 : entity work.mult   generic map(n => 64) port map(s2,yn,t4);			 -- listo	
+	START <= '1' after 200 ns, '0' after 2000 ns;
 	
-	--Bloque 3
-	mult_m5  : entity work.mult   generic map(n => 64) port map(xn,yn,m5);			 -- listo
-	mult_t3  : entity work.mult   generic map(n => 64) port map(an_4,m5,t3);		 -- listo
-	mult_t3p : entity work.mult   generic map(n => 64) port map(m5,an_10,t3p);		 -- listo
-			
-	--Bloque 4
-	mult_m3  : entity work.mult   generic map(n => 64) port map(an_9,xn,m3);		 -- listo
-	sum_s3	 : entity work.sum    generic map(n => 64) port map(m3,an_8,s3);		 --	listo
-	mult_t2p : entity work.mult   generic map(n => 64) port map(s3,xn,t2p);			 -- listo	
-	
-	--Bloque 5
-	mult_m4  : entity work.mult   generic map(n => 64) port map(an_12,yn,m4);		 -- listo
-	sum_s4	 : entity work.sum    generic map(n => 64) port map(m4,an_11,s4);		 --	listo
-	mult_t4p : entity work.mult   generic map(n => 64) port map(s4,yn,t4p);			 -- listo		
-	
-	--Bloque 6
-	sum_s5   : entity work.sum4a1 generic map(n => 64) port map(an_1,t2,t3,t4,s5);	 --	listo
-	ff_xn    : entity work.ff_gen_hab    generic map(n => 64) port map(RST,CLK,hab,s5,xn_retro);
-	
-	--Bloque7
-	sum_s6   : entity work.sum4a1 generic map(n => 64) port map(an_7,t2p,t3p,t4p,s6);  -- listo
-	ff_yn    : entity work.ff_gen_hab     generic map(n => 64) port map(RST,CLK,hab,s6,yn_retro);
-
-	
-	Xn_p <= xn_retro;	
-	Yn_p <= yn_retro;	  
-
-	-- Control Unit
-	cu_mod  : entity work.cu2  port map(RST,CLK,START,hab,sel);
-	
-end arch;
+	-- NOTA: Simular por almenos 1000 ns	   
+	-- wait for 10 ns;
+end architecture;
 ```
 
-**Código: top.vhd**
+**Código: tb_sundar_system .vhd**
+
+
+
+## Simulación VHDL
+
+Los valores de las condiciones iniciales y de los parametros en hexadecimal son los siguientes
+
+<img src="images\hex_param.png" alt="hex_param" style="zoom:80%;" />
+
+
+
+<img src="images\vhdl_simu.png" alt="vhdl_simu" style="zoom:150%;" />
+
+Estos son las primeras iteraciones la simulación en C en hexadecimal, como podemos notar son exactamente los mismos resultados, por lo tanto la arquitectura esta lista para pasarse a la FPGA.
+
+```
+00019c8216c61521	0001a77c45cbbc29
+00019fda907fd393	0001b5c0f6e0250f
+0001a3a273397594	0001c46a45a4ee39
+0001a7d94bc2671f	0001d37add89f9ec
+```
+
+
+
+## Notas personales
+
+* Para poder realizar verdaderamente un analisis de punto fijo del sistema es necesario analizar operación por operación para descubrir cuales son los límites máximos y mínimos, además de eso ejecutar el programa un tiempo razonable, no basta con analizar los límites de las variables de estado, por esta razón modifique el programa de análisis de punto fijo de matlab, además, noté que cambiar el orden de las operaciones modifica ligeramente el atractor, afortunadamente no su cualidad de ser caótico, por lo anterior también se modifican los límites máximos y mínimos ligeramente. Una vez determinados los límites se selecciona el mínimo número de bits para la parte entera, en este caso particular el límite es |1583| por lo tanto se seleccionaron 11 bits para la parte entera, la parte fraccionaria se elige seleccionando una arquitectura, de 16, 32 o 64 bits y despues restando la parte entera y el bit de signo a la arquitectura seleccionada. Esto es conveniente porque nos permite hacer una simulación en C antes de saltar a la descripción de VHDL y evitar perder tiempo buscando errores. Se pueden cometer errores de sintaxis, los cuales se solucionan facilmente pero no errores de diseño.
+* En el código de **mult.vhd** estan las ecuaciones para no perder tiempo al extraer los bit en punto fijo,
+
+
+
+
+
+
+
+
 
 
 
@@ -673,10 +936,3 @@ end arch;
 h = 0.01 
 
 <img src="images\c1.png" alt="c1" style="zoom:150%;" />
-
-
-
-## Notas personales
-
-* Para poder realizar verdaderamente un analisis de punto fijo del sistema es necesario analizar operación por operación para descubrir cuales son los límites máximos y mínimos, además de eso ejecutar el programa un tiempo razonable, no basta con analizar los límites de las variables de estado, por esta razón modifique el programa de análisis de punto fijo de matlab, además, noté que cambiar el orden de las operaciones modifica ligeramente el atractor, afortunadamente no su cualidad de ser caótico, por lo anterior también se modifican los límites máximos y mínimos ligeramente. Una vez determinados los límites se selecciona el mínimo número de bits para la parte entera, en este caso particular el límite es |1583| por lo tanto se seleccionaron 11 bits para la parte entera, la parte fraccionaria se elige seleccionando una arquitectura, de 16, 32 o 64 bits y despues restando la parte entera y el bit de signo a la arquitectura seleccionada. Esto es conveniente porque nos permite hacer una simulación en C antes de saltar a la descripción de VHDL y evitar perder tiempo buscando errores. Se pueden cometer errores de sintaxis, los cuales se solucionan facilmente pero no errores de diseño.
-* 

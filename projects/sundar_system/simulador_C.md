@@ -67,6 +67,16 @@ char is 1 bytes.
 
 
 
+| Tipo       | Bytes | Bits | Caracteres en HEX |
+| ---------- | ----- | ---- | ----------------- |
+| `char`     | 1     | 8    | 2                 |
+| `short`    | 2     | 16   | 4                 |
+| `int`      | 4     | 32   | 8                 |
+| `long`     | 8     | 64   | 16                |
+| `__int128` | 16    | 128  | 32                |
+
+
+
 ## Representación de punto fijo
 
 La representación de punto fijo de un número $X$ es $X(a,b)$ donde $a$ es la parte entera y $b$ es la parte fraccionaria. De manera que el número de bits en la representación es $a + b + 1$, es decir la parte entera más la parte fraccionaria más el bit de signo. El rango de valores que puede tomar es   $[-2^{a},2^{a}-2^{-b}]$. Por ejemplo:
@@ -151,5 +161,302 @@ long multTrunc( long x, long y ){
 
 
 
-Una vez teniendo todas las herramientas anteriores podemos hacer cualquier tipo de simulación de punto fijo en las arquitecturas de 16, 
+Finalmente para mostrar en pantalla información de la simulación y poder guardar el resultado de esta en un archivo de texto utilizamos los siguientes comandos:
+
+```c
+printf(" Representacion A(a,b) = A(%d,%d)\n a: entera\tb: fraccionaria\n",entera,frac);
+```
+
+```c
+// Archivo de texto
+FILE *fpointer = fopen("salida.txt","w");
+	fprintf(fpointer,"%2.20f\t%lx\n", getNumber( x ),x);
+fclose(fpointer);
+```
+
+La primera línea crea un apuntador para guardar en  `salida.txt` los resultados de la simulación, `%lx` es el formato de en hexadecimal de un tipo `long` y finalmente hay que cerrar el archivo de texto en el que se esta escribiendo.
+
+Una vez teniendo todas las herramientas anteriores podemos hacer cualquier tipo de simulación de punto fijo en las arquitecturas de 16, 32 y 64 bits, únicamente hay que tener presente que:
+
+| Arquitectura | Tipo    | Multiplicación |
+| ------------ | ------- | -------------- |
+| 16           | `short` | `int`          |
+| 32           | `int`   | `long`         |
+| 64           | `long`  | `__int128`     |
+
+Para ejecutar el código de las plantillas se 
+
+```shell
+gcc -o simulacion simulacion.c - lm
+./simulacion
+```
+
+
+
+## Plantillas
+
+
+
+#### Para 64 bits
+
+```c
+/*
+    Autor: 		 Ciro Fabian Bermudez Marquez
+    Descripción: Simulador de diseños en VHDL de 64 bits en punto fijo
+*/
+/* Librerias*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+/* Variables globales */
+int _a;			// parte entera
+int _b;			// parte fraccionaria
+long _power;	// factor de conversion
+
+/*Funciones*/
+
+// Inicializacion A(a,b) representacion en punto fijo
+void inicializa( int a, int b ){        
+	_a = a;					// _a: parte entera
+    _b = b;					// _b: parte fraccionaria
+    _power = (long)1 << _b;	// calculo de factor de conversion
+}
+
+// Convierte a punto fijo con truncamiento 
+long setNumber( double v ){
+    return ( (long)(v*_power) );
+}
+
+// Convierte de vuelta a punto flotante
+double getNumber( long r ){
+    return ( (double)r/_power);
+}
+
+// Multiplicacion de punto fijo con truncamiento
+long multTrunc( long x, long y ){
+    __int128 r;
+    __int128 a=0;
+    __int128 b=0;
+    a = x;
+    b = y;
+    r = a*b;
+    r = r >> _b;
+    return( r );
+}
+
+int main(int argc, char *argv[]){
+    FILE *fpointer = fopen("salida.txt","w");	    // Archivo de texto
+    
+    // Arq: 64 bits entera + frac + 1 = 64
+    int entera = 3;
+    int frac;
+    frac = 64 - 1 - entera;
+    
+    // Variables y parametros de simulacion
+    double x = 1.0;
+    double a = 1.0;
+    long xpf, apf;									// xpf: x punto fijo	apf: parametro
+    
+    // Inicializacion de arq
+    inicializa( entera, frac);
+    printf(" Representacion A(a,b) = A(%d,%d)\n a: entera\tb: fraccionaria\n",entera,frac);
+    printf(" Rango: [%30.20f,%30.20f] = \n", -pow(2.0,entera),pow(2.0,entera)-pow(2.0,-frac));
+    
+    // Conversion a punto fijo
+    xpf = setNumber( x );
+    printf(" # x:      %12.8f\n # x real: %12.8f\n", x, getNumber( xpf ) );
+    
+    apf = setNumber( a );
+    printf(" # a:      %12.8f\n # a real: %12.8f\n", a, getNumber( apf ) );
+    
+    fprintf(fpointer,"%12.8f  %.16lx\n", getNumber( xpf ), xpf);
+    for(int i = 0; i < 5; i++){
+        xpf = xpf + apf;
+        fprintf(fpointer,"%12.8f  %.16lx\n", getNumber( xpf ), xpf);
+    }
+    
+	fclose(fpointer);								// Cerrar archivo de texto
+	return 0;
+}
+```
+
+
+
+
+
+#### Para 32 bits
+
+```c
+/*
+    Autor: 		 Ciro Fabian Bermudez Marquez
+    Descripción: Simulador de diseños en VHDL de 32 bits en punto fijo
+*/
+/* Librerias*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+/* Variables globales */
+int _a;			// parte entera
+int _b;			// parte fraccionaria
+int _power;	    // factor de conversion
+
+/*Funciones*/
+
+// Inicializacion A(a,b) representacion en punto fijo
+void inicializa( int a, int b ){        
+	_a = a;					// _a: parte entera
+    _b = b;					// _b: parte fraccionaria
+    _power = (int)1 << _b;	// calculo de factor de conversion
+}
+
+// Convierte a punto fijo con truncamiento 
+int setNumber( double v ){
+    return ( (int)(v*_power) );
+}
+
+// Convierte de vuelta a punto flotante
+double getNumber( int r ){
+    return ( (double)r/_power);
+}
+
+// Multiplicacion de punto fijo con truncamiento
+int multTrunc( int x, int y ){
+    long r;
+    long a=0;
+    long b=0;
+    a = x;
+    b = y;
+    r = a*b;
+    r = r >> _b;
+    return( r );
+}
+
+int main(int argc, char *argv[]){
+    FILE *fpointer = fopen("salida.txt","w");	    // Archivo de texto
+    
+    // Arq: 64 bits entera + frac + 1 = 64
+    int entera = 3;
+    int frac;
+    frac = 32 - 1 - entera;
+    
+    // Variables y parametros de simulacion
+    double x = 1.0;
+    double a = 1.0;
+    int xpf, apf;									// xpf: x punto fijo	apf: parametro
+    
+    // Inicializacion de arq
+    inicializa( entera, frac);
+    printf(" Representacion A(a,b) = A(%d,%d)\n a: entera\tb: fraccionaria\n",entera,frac);
+    printf(" Rango: [%30.21f,%30.21f] = \n", -pow(2.0,entera),pow(2.0,entera)-pow(2.0,-frac));
+    
+    // Conversion a punto fijo
+    xpf = setNumber( x );
+    printf(" # x:      %10.6f\n # x real: %10.6f\n", x, getNumber( xpf ) );
+    
+    apf = setNumber( a );
+    printf(" # a:      %10.6f\n # a real: %10.6f\n", a, getNumber( apf ) );
+    
+    fprintf(fpointer,"%10.6f  %.8x\n", getNumber( xpf ), xpf);
+    for(int i = 0; i < 5; i++){
+        xpf = xpf + apf;
+        fprintf(fpointer,"%10.6f  %.8x\n", getNumber( xpf ), xpf);
+    }
+    
+	fclose(fpointer);								// Cerrar archivo de texto
+	return 0;
+}
+```
+
+
+
+
+
+#### Para 16 bits
+
+```c
+/*
+    Autor: 		 Ciro Fabian Bermudez Marquez
+    Descripción: Simulador de diseños en VHDL de 16 bits en punto fijo
+*/
+/* Librerias*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+/* Variables globales */
+int _a;			// parte entera
+int _b;			// parte fraccionaria
+short _power;	// factor de conversion
+
+/*Funciones*/
+
+// Inicializacion A(a,b) representacion en punto fijo
+void inicializa( int a, int b ){        
+	_a = a;						// _a: parte entera
+    _b = b;						// _b: parte fraccionaria
+    _power = (short)1 << _b;	// calculo de factor de conversion
+}
+
+// Convierte a punto fijo con truncamiento 
+short setNumber( double v ){
+    return ( (short)(v*_power) );
+}
+
+// Convierte de vuelta a punto flotante
+double getNumber( short r ){
+    return ( (double)r/_power);
+}
+
+// Multiplicacion de punto fijo con truncamiento
+short multTrunc( short x, short y ){
+    int r;
+    int a=0;
+    int b=0;
+    a = x;
+    b = y;
+    r = a*b;
+    r = r >> _b;
+    return( r );
+}
+
+int main(int argc, char *argv[]){
+    FILE *fpointer = fopen("salida.txt","w");	    // Archivo de texto
+    
+    // Arq: 64 bits entera + frac + 1 = 64
+    int entera = 3;
+    int frac;
+    frac = 16 - 1 - entera;
+    
+    // Variables y parametros de simulacion
+    double x = 1.0;
+    double a = 1.0;
+    short xpf, apf;									// xpf: x punto fijo	apf: parametro
+    
+    // Inicializacion de arq
+    inicializa( entera, frac);
+    printf(" Representacion A(a,b) = A(%d,%d)\n a: entera\tb: fraccionaria\n",entera,frac);
+    printf(" Rango: [%30.15f,%30.15f] = \n", -pow(2.0,entera),pow(2.0,entera)-pow(2.0,-frac));
+    
+    // Conversion a punto fijo
+    xpf = setNumber( x );
+    printf(" # x:      %10.6f\n # x real: %10.6f\n", x, getNumber( xpf ) );
+    
+    apf = setNumber( a );
+    printf(" # a:      %10.6f\n # a real: %10.6f\n", a, getNumber( apf ) );
+    
+    fprintf(fpointer,"%10.6f  %.4x\n", getNumber( xpf ), xpf);
+    for(int i = 0; i < 5; i++){
+        xpf = xpf + apf;
+        fprintf(fpointer,"%10.6f  %.4x\n", getNumber( xpf ), xpf);
+    }
+    
+	fclose(fpointer);								// Cerrar archivo de texto
+	return 0;
+}
+```
 

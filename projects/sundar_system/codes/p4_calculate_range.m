@@ -1,10 +1,11 @@
 clear; close all; clc;
 
-% 32 bit architecture X(a,b) 
-% a+b+1 = 32 bits
+% 64 bit architecture X(a,b) 
+% a+b+1 = 64 bits
 % 1 is for the sign bit
-a = 10; 
-b = 64-1-a; 
+arch = 64;
+a = 11;         % Entera
+b = arch-11-a;   % Fraccionaria
 
 format longG;
 fprintf("Enteros = %d\nDecimales = %d\n",a,b);
