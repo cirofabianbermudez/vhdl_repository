@@ -28,7 +28,7 @@ for i = 1:100000
     y4(i+1) = y4(i) + (-y2(i))*h;
 end
 
-% f = figure; f.Position(1:2) = [800 800]; % [right bottom]
+f = figure; f.Position(1:2) = [800 800]; % [right bottom]
 subplot(2,2,1); plot(y1,y2); grid on; grid minor;
 subplot(2,2,2); plot(y2,y3); grid on; grid minor;
 subplot(2,2,3); plot(y3,y4); grid on; grid minor;

@@ -1,4 +1,4 @@
-# Sundarapandian system
+# Sundarapandian system 
 
 
 
@@ -16,9 +16,13 @@ $$
 		\label{ec:sundar}
 $$
 
-## Forward Euler ecuación para el sistema
+## Trapezoidal ecuación para el sistema
 
-El método de forward Euler es el siguiente:
+El método trapezoidal es el siguiente:
+$$
+y_{n+1} = y_{n} + \frac{h}{2} \left( \,f(x_{n},y_{n}) + f(x_{n+1},y_{n+1} \,)\right)
+$$
+como este algoritmo necesita una muestra despues utilizamos forward euler para calcular $y_{n+1}$
 $$
 y_{n+1} = y_{n} + h f(x_{n},y_{n})
 $$
@@ -921,18 +925,3 @@ Estos son las primeras iteraciones la simulación en C en hexadecimal, como pode
 * Para poder realizar verdaderamente un analisis de punto fijo del sistema es necesario analizar operación por operación para descubrir cuales son los límites máximos y mínimos, además de eso ejecutar el programa un tiempo razonable, no basta con analizar los límites de las variables de estado, por esta razón modifique el programa de análisis de punto fijo de matlab, además, noté que cambiar el orden de las operaciones modifica ligeramente el atractor, afortunadamente no su cualidad de ser caótico, por lo anterior también se modifican los límites máximos y mínimos ligeramente. Una vez determinados los límites se selecciona el mínimo número de bits para la parte entera, en este caso particular el límite es |1583| por lo tanto se seleccionaron 11 bits para la parte entera, la parte fraccionaria se elige seleccionando una arquitectura, de 16, 32 o 64 bits y despues restando la parte entera y el bit de signo a la arquitectura seleccionada. Esto es conveniente porque nos permite hacer una simulación en C antes de saltar a la descripción de VHDL y evitar perder tiempo buscando errores. Se pueden cometer errores de sintaxis, los cuales se solucionan facilmente pero no errores de diseño.
 * En el código de **mult.vhd** estan las ecuaciones para no perder tiempo al extraer los bit en punto fijo,
 
-
-
-
-
-
-
-
-
-
-
-## Analisis de SCM (Single constant multiplication)
-
-h = 0.01 
-
-<img src="images\c1.png" alt="c1" style="zoom:150%;" />
