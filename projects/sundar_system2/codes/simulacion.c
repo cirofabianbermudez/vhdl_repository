@@ -48,27 +48,28 @@ int main(int argc, char *argv[]){
     FILE *fpointer = fopen("salida.txt","w");	    // Archivo de texto
     
     // Arq: 64 bits entera + frac + 1 = 64
-    int entera = 11;
+    int entera = 15;
     int frac;
     frac = 64 - 1 - entera;
     
     // Variables y parametros de simulacion
 	// Condiciones iniciales
-	double y1_0 = 0.1;
-	double y2_0 = 0.1;
-	double y3_0 = 0.1;
-	double y4_0 = 0.1;
+	double z1_0 = 1.0;
+	double z2_0 = 1.0;
+	double z3_0 = 1.0;
+	double z4_0 = 1.0;
+	double z5_0 = 1.0;
 	
 	// Para metros
 	double a = 40.0;
-	double b = 28.0;
-	double c = 4.0;
-	double d = 7.0;
-	double h = 0.001;
+	double b = 90.0;
+	double c = 16.0;
+	double d = 15.0;
+	double h = 0.0001;
 	
 	// Variables para algoritmo en punto fijo
-	long y1_n,y2_n,y3_n,y4_n;        	// Actual
-    long y1_ni,y2_ni,y3_ni,y4_ni;		// Siguiente
+	long z1_n,z2_n,z3_n,z4_n,z5_n;        	// Actual
+    long z1_ni,z2_ni,z3_ni,z4_ni,z5_ni;		// Siguiente
 	long apf, bpf, cpf, dpf, hpf;
     
     // Inicializacion de arq
@@ -78,19 +79,21 @@ int main(int argc, char *argv[]){
     
     // Conversion a punto fijo
 	
-	y1_n = setNumber( y1_0 );
-	y2_n = setNumber( y2_0 );
-	y3_n = setNumber( y3_0 );
-	y4_n = setNumber( y4_0 );
+	z1_n = setNumber( z1_0 );
+	z2_n = setNumber( z2_0 );
+	z3_n = setNumber( z3_0 );
+	z4_n = setNumber( z4_0 );
+	z5_n = setNumber( z5_0 );
 	apf = setNumber( a );
 	bpf = setNumber( b ); 
 	cpf = setNumber( c );
 	dpf = setNumber( d );
 	hpf = setNumber( h );
-	printf(" # y1_0:      %12.8f\n # y1_0 real: %12.8f\n", y1_0, getNumber( y1_n ) );
-	printf(" # y2_0:      %12.8f\n # y2_0 real: %12.8f\n", y2_0, getNumber( y2_n ) );
-	printf(" # y2_0:      %12.8f\n # y3_0 real: %12.8f\n", y3_0, getNumber( y3_n ) );
-	printf(" # y4_0:      %12.8f\n # y4_0 real: %12.8f\n", y4_0, getNumber( y4_n ) );
+	printf(" # z1_0:      %12.8f\n # z1_0 real: %12.8f\n", z1_0, getNumber( z1_n ) );
+	printf(" # z2_0:      %12.8f\n # z2_0 real: %12.8f\n", z2_0, getNumber( z2_n ) );
+	printf(" # z2_0:      %12.8f\n # z3_0 real: %12.8f\n", z3_0, getNumber( z3_n ) );
+	printf(" # z4_0:      %12.8f\n # z4_0 real: %12.8f\n", z4_0, getNumber( z4_n ) );
+	printf(" # z5_0:      %12.8f\n # z5_0 real: %12.8f\n", z5_0, getNumber( z5_n ) );
 	printf(" # a:      %12.8f\n # a real: %12.8f\n", a, getNumber( apf ) );
 	printf(" # b:      %12.8f\n # b real: %12.8f\n", b, getNumber( bpf ) );
 	printf(" # c:      %12.8f\n # c real: %12.8f\n", c, getNumber( cpf ) );
@@ -98,20 +101,22 @@ int main(int argc, char *argv[]){
 	
 	
     
-	fprintf(fpointer,"%20.15f\t%20.15f\n",getNumber( y1_n ), getNumber( y2_n ));
+	fprintf(fpointer,"%20.15f\t%20.15f\n",getNumber( z1_n ), getNumber( z2_n ));
     for(int i = 0; i<1000; i++){
 
-        y1_ni = y1_n  + multTrunc(hpf,multTrunc( apf, y2_n - y1_n ) + multTrunc(y2_n, y3_n) + multTrunc( dpf, y4_n));
-        y2_ni = y2_n  + multTrunc(hpf, - y1_n + multTrunc( bpf, y2_n ) - multTrunc( y1_n ,y3_n ) + multTrunc( dpf, y4_n));
-        y3_ni = y3_n  + multTrunc(hpf, multTrunc( y2_n , y2_n ) - multTrunc( cpf, y3_n));
-        y4_ni = y4_n  + multTrunc(hpf, - y2_n);
+        z1_ni = z1_n  + multTrunc(hpf,multTrunc( apf, z2_n - z1_n ) + multTrunc(z2_n, z3_n) + z4_n);
+        z2_ni = z2_n  + multTrunc(hpf, multTrunc( z1_n, bpf - z3_n ) + multTrunc( cpf, z4_n)  );
+        z3_ni = z3_n  + multTrunc(hpf, multTrunc( z1_n , z1_n ) - multTrunc( dpf, z3_n ) + multTrunc( z1_n, z2_n) );
+        z4_ni = z4_n  + multTrunc(hpf, z5_n - z2_n);
+		z5_ni = z5_n  + multTrunc(hpf, -z5_n );
         
-        y1_n = y1_ni;
-        y2_n = y2_ni;
-        y3_n = y3_ni;
-        y4_n = y4_ni;     
+        z1_n = z1_ni;
+        z2_n = z2_ni;
+        z3_n = z3_ni;
+        z4_n = z4_ni;   
+		z5_n = z5_ni;		
 
-        fprintf(fpointer,"%20.15f\t%20.15f\n",getNumber( y1_n ), getNumber( y2_n ));
+        fprintf(fpointer,"%20.15f\t%20.15f\n",getNumber( z1_n ), getNumber( z2_n ));
     }
     
 	fclose(fpointer);								// Cerrar archivo de texto

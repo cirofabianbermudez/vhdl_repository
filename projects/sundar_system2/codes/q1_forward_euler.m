@@ -1,13 +1,10 @@
 clear; close all; clc;
 tic
 h = 0.0001;   % Tamanio de paso   0.0003
-t = 0:h:15;   % Vector de tiempo
+t = 0:h:0.1;   % Vector de tiempo
 
 % Parametros
-a = 40.0;
-b = 90.0;
-c = 16.0;
-d = 15.0;
+a = 40.0; b = 90.0; c = 16.0; d = 15.0;
 
 z1 = zeros(size(t));   % Inicializacion de los vectores
 z2 = zeros(size(t));

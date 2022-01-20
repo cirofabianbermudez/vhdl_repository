@@ -4,8 +4,8 @@ clear; close all; clc;
 % a+b+1 = 64 bits
 % 1 is for the sign bit
 arch = 64;
-a = 11;         % Entera
-b = arch-11-a;   % Fraccionaria
+a = 15;         % Entera
+b = arch-1-a;   % Fraccionaria
 
 format longG;
 fprintf("Enteros = %d\nDecimales = %d\n",a,b);

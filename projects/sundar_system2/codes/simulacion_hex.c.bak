@@ -101,8 +101,8 @@ int main(int argc, char *argv[]){
 	
 	
     
-	printf("z1=%.16lx\nz2=%.16lx\nz3=%.16lx\nz4=%.16lx\nz5=%.16lx\n\n", z1_n,z2_n,z3_n,z4_n,z5_n );
-    printf("a=%.16lx\nb=%.16lx\nc=%.16lx\nd=%.16lx\nh=%.16lx\n", apf,bpf,cpf,dpf,hpf );
+	printf("%.16lx\n%.16lx\n%.16lx\n%.16lx\n%.16lx\n\n", z1_n,z2_n,z3_n,z4_n,z5_n );
+    printf("%.16lx\n%.16lx\n%.16lx\n%.16lx\n%.16lx\n", apf,bpf,cpf,dpf,hpf );
 	fprintf(fpointer,"%.16lx\t%.16lx\n", z1_n , z2_n );
     for(int i = 0; i<1000; i++){
 
